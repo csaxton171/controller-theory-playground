@@ -10,16 +10,17 @@ source material from [Feedback Control for Computer Systems](https://www.amazon.
 
 - `git clone git@github.com:csaxton171/controller-theory-playground.git`
 - `nvm use`
-- `yarn`
+- `yarn install`
 
 ## run
 
-`yarn start run --set-point 5`
-
 ```bash
 # for available commands
-yarn start --help
+ctlr --help
 
 # for available 'run' config options
-yarn start run --help
+ctlr run --help
+
+# basic example of 'run'
+ctlr run --set-point 5
 ```
