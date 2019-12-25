@@ -8,9 +8,9 @@ source material from [Feedback Control for Computer Systems](https://www.amazon.
 
 ## install
 
-- git clone
-- nvm use
-- yarn
+- `git clone git@github.com:csaxton171/controller-theory-playground.git`
+- `nvm use`
+- `yarn`
 
 ## run
 
