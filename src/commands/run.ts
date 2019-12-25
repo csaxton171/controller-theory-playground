@@ -74,8 +74,10 @@ export const handler = async (argv: ControllerRunConfig) => {
         { param: "set-point", value: argv.setPoint },
         { param: "gain", value: argv.gain }
     ]);
+    console.log("[ baseline plant (uncontrolled) ]");
     console.log(outputPlantSeries(baselineSeries));
     console.log("\n\n");
+    console.log("[ subject plant ]");
     console.log(outputPlantSeries(controlledSeries));
 };
 
