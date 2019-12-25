@@ -11,6 +11,7 @@ source material from [Feedback Control for Computer Systems](https://www.amazon.
 - `git clone git@github.com:csaxton171/controller-theory-playground.git`
 - `nvm use`
 - `yarn install`
+- `yarn link`( enable `ctlr`)
 
 ## run
 
