@@ -1,0 +1,29 @@
+{
+  "name": "control-theory",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "start": "ts-node ./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/asciichart": "^1.5.0",
+    "@types/chance": "^1.0.8",
+    "@types/jest": "^24.0.24",
+    "@types/node": "^13.1.0",
+    "@types/ramda": "^0.26.38",
+    "@types/yargs": "^13.0.4",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "asciichart": "^1.5.9",
+    "chance": "^1.1.4",
+    "ramda": "^0.26.1",
+    "ts-node": "^8.5.4",
+    "tslib": "^1.10.0",
+    "yargs": "^15.0.2"
+  }
+}
