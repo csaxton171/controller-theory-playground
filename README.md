@@ -1,6 +1,6 @@
 # controller theory playground
 
-> repository for experimenting with various aspects of contoller
+> repository for experimenting with various aspects of contoller theory
 
 ## overview
 
