@@ -4,8 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "jest",
-    "start": "ts-node ./src/index.ts"
+    "test": "jest"
+  },
+  "bin": {
+    "ctlr": "bin/controller-theory-playground"
   },
   "devDependencies": {
     "@types/asciichart": "^1.5.0",
