@@ -12,9 +12,6 @@ module.exports = {
       statements: 100
     }
   },
-  coveragePathIgnorePatterns: [
-    "<rootDir>/__tests__/",
-    "<rootDir>/src/config.ts"
-  ],
+  coveragePathIgnorePatterns: ["<rootDir>/__tests__/"],
   reporters: ["default"]
 };
