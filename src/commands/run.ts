@@ -20,6 +20,7 @@ type ControllerRunConfig = {
     iterations: number;
     deadZone: [number, number] | [];
     debug: boolean;
+    graph: boolean;
 };
 
 export const describe = "runs controller against plant";
@@ -48,6 +49,11 @@ export const builder = () =>
                 describe: "output worker plant activity",
                 type: "boolean",
                 default: false
+            },
+            graph: {
+                describe: "output graphs of controller activity",
+                type: "boolean",
+                default: true
             },
             deadZone: {
                 alias: "dz",
