@@ -1,5 +1,8 @@
 # controller theory playground
 
+[![Conventional Commits][conventional-commits-image]][conventional-commits-url]
+[![CircleCI][circleci-image]][circleci-url]
+
 > repository for experimenting with various aspects of contoller theory
 
 ## overview
@@ -25,3 +28,8 @@ ctlr run --help
 # basic example of 'run'
 ctlr run --set-point 5
 ```
+
+[conventional-commits-image]: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
+[conventional-commits-url]: https://conventionalcommits.org/
+[circleci-image]: https://circleci.com/gh/csaxton171/controller-theory-playground.svg?style=svg&circle-token=55f8d89625eab38101706cc6d65203715e082333
+[circleci-url]: https://circleci.com/gh/csaxton171/controller-theory-playground

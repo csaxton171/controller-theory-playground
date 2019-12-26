@@ -17,13 +17,6 @@ commands:
       - restore_cache:
           key: << pipeline.parameters.yarn-cache-version >>-yarn-packages-{{ checksum "yarn.lock" }}
 
-  install-yarn-cli:
-    description: "install yarn cli"
-    steps:
-      - run:
-          name: Install Yarn
-          command: sudo npm install -g yarn
-
   install-dependencies:
     description: "install dependencies"
     steps:
@@ -45,7 +38,6 @@ jobs:
     steps:
       - checkout
       - restore-yarn
-      - install-yarn-cli
       - install-dependencies
       - save-yarn
       - persist_to_workspace:
