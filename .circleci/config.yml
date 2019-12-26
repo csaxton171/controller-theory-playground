@@ -71,9 +71,6 @@ jobs:
           name: assert code formatting standards
           command: yarn fmt:diff
       - run:
-          name: assert code linting
-          command: yarn lint:ci
-      - run:
           name: audit solution dependency security issues
           command: yarn audit --level moderate
 
