@@ -5,7 +5,8 @@ import {
     makeWorkers,
     WorkerPlant,
     WorkDuration,
-    randomDuration
+    randomDuration,
+    fixedDuration
 } from "../worker";
 import {
     proportionalControllerFactory,
@@ -19,6 +20,8 @@ type ControllerRunConfig = {
     gain: number;
     iterations: number;
     deadZone: [number, number] | [];
+    initialWorkers: WorkDuration[];
+    durationStrategy: () => WorkDuration;
     debug: boolean;
     graph: boolean;
 };
@@ -60,18 +63,51 @@ export const builder = () =>
                 describe: "an input range expressed as 'min-max' ",
                 type: "string",
                 default: ""
+            },
+            initialWorkers: {
+                alias: "workers",
+                describe: "an list of work durations ( e.g. 1 5 3 10 8 )",
+                array: true,
+                default: [10, 5, 3, 5, 15, 30, 15]
+            },
+            durationStrategy: {
+                alias: "ds",
+                describe: "method of producing durations for new workers",
+                choice: [
+                    "randomUnits",
+                    "singleUnit",
+                    "doubleUnit",
+                    "tripleUnit"
+                ],
+                default: "randomUnits"
             }
         })
         .coerce({
             deadZone: (opt: string) =>
-                !opt.trim() ? [] : opt.split("-").map(e => parseInt(e))
+                !opt.trim() ? [] : opt.split("-").map(e => parseInt(e)),
+
+            initialWorkers: (opt: WorkDuration[]) => opt,
+            durationStrategy: (opt: string) => {
+                switch (opt) {
+                    case "randomUnits":
+                        return randomDuration;
+                    case "singleUnit":
+                        return fixedDuration(1);
+                    case "doubleUnit":
+                        return fixedDuration(1);
+                    case "tripleUnit":
+                        return fixedDuration(3);
+                    default:
+                        return randomDuration;
+                }
+            }
         })
         .usage(
             "$0 run --set-point <number> [--gain <number>] [--terations <number>]"
         );
 
 export const handler = async (argv: ControllerRunConfig) => {
-    const workerSpecs: WorkDuration[] = [10, 5, 1, 5, 15, 30, 15];
+    const workerSpecs: WorkDuration[] = argv.initialWorkers;
     const logger = argv.debug ? new ConsoleLogger() : { info: () => null };
     const baselinePlant = new WorkerPlant(makeWorkers(workerSpecs), logger);
     const baselineSeries = [];
@@ -93,7 +129,7 @@ export const handler = async (argv: ControllerRunConfig) => {
         controlledSeries.push(result.length);
 
         controlledPlant.addWorkers(
-            makeCountWorkers(controller(result.length), randomDuration())
+            makeCountWorkers(controller(result.length), argv.durationStrategy)
         );
     }
 
