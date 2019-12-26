@@ -1,0 +1,93 @@
+version: 2.1
+
+parameters:
+  yarn-cache-version:
+    type: string
+    default: "v1"
+
+executors:
+  node:
+    docker:
+      - image: circleci/node:12.14.0
+
+commands:
+  restore-yarn:
+    description: "restore yarn package cache"
+    steps:
+      - restore_cache:
+          key: << pipeline.parameters.yarn-cache-version >>-yarn-packages-{{ checksum "yarn.lock" }}
+
+  install-yarn-cli:
+    description: "install yarn cli"
+    steps:
+      - run:
+          name: Install Yarn
+          command: sudo npm install -g yarn
+
+  install-dependencies:
+    description: "install dependencies"
+    steps:
+      - run:
+          name: install dependencies
+          command: yarn install --frozen-lockfile
+
+  save-yarn:
+    description: "save yarn package cache"
+    steps:
+      - save_cache:
+          key: << pipeline.parameters.yarn-cache-version >>-yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+
+jobs:
+  node-setup:
+    executor: node
+    steps:
+      - checkout
+      - restore-yarn
+      - install-yarn-cli
+      - install-dependencies
+      - save-yarn
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./
+
+  node-test:
+    executor: node
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: run tests
+          command: yarn test
+
+  node-validate:
+    executor: node
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: assert code formatting standards
+          command: yarn fmt:diff
+      - run:
+          name: assert code linting
+          command: yarn lint:ci
+      - run:
+          name: audit solution dependency security issues
+          command: yarn audit --level moderate
+
+workflows:
+  version: 2.1
+
+  validate-branch-workflow:
+    jobs:
+      - node-setup
+
+      - node-validate:
+          requires:
+            - node-setup
+
+      - node-test:
+          requires:
+            - node-setup
