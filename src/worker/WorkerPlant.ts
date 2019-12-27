@@ -4,6 +4,7 @@ import { range } from "ramda";
 
 export class WorkerPlant {
     private workers: Worker[];
+  
     constructor(workers: Worker[], private logger: Logger) {
         this.workers = [...workers];
     }
