@@ -73,7 +73,7 @@ export const builder = () =>
             durationStrategy: {
                 alias: "ds",
                 describe: "method of producing durations for new workers",
-                choice: [
+                choices: [
                     "randomUnits",
                     "singleUnit",
                     "doubleUnit",
