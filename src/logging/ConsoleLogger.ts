@@ -1,6 +1,4 @@
-export interface Logger {
-    info(message: string): void;
-}
+import { Logger } from "./index";
 
 export class ConsoleLogger implements Logger {
     info(message: string) {

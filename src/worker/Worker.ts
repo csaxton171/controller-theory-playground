@@ -2,7 +2,7 @@ import { WorkDuration } from "./WorkDuration";
 import { range } from "ramda";
 
 export interface Worker {
-    cycle(): void;
+    cycle(): number;
     completed: boolean;
 }
 
@@ -12,7 +12,7 @@ export class BasicWorker {
         this.remainingDuration = duration;
     }
     cycle() {
-        this.remainingDuration--;
+        return --this.remainingDuration;
     }
 
     get completed() {
@@ -20,7 +20,7 @@ export class BasicWorker {
     }
 
     toString() {
-        return `Worker[${this.remainingDuration}]`;
+        return `W[${this.remainingDuration}]`;
     }
 }
 

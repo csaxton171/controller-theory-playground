@@ -17,4 +17,10 @@ describe("deadZoneDecorator", () => {
       ).toBe(expectedOutput);
     }
   );
+
+  it("should throw an exception if misconfigured", () => {
+    expect(() => {
+      deadZoneDecorator(passThroughController, [5, 1]);
+    }).toThrow();
+  });
 });
