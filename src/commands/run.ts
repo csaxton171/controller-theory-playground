@@ -13,7 +13,7 @@ import {
     compositeControllerFactory,
     deadZoneDecorator
 } from "../controller";
-import { ConsoleLogger } from "../Logger";
+import { ConsoleLogger } from "../logging";
 
 type ControllerRunConfig = {
     setPoint: number;
@@ -109,12 +109,14 @@ export const builder = () =>
 export const handler = async (argv: ControllerRunConfig) => {
     const workerSpecs: WorkDuration[] = argv.initialWorkers;
     const logger = argv.debug ? new ConsoleLogger() : { info: () => null };
+
+    outputConfig(argv, workerSpecs);
+
     const baselinePlant = new WorkerPlant(makeWorkers(workerSpecs), logger);
     const baselineSeries = [];
     for (const result of baselinePlant.iterate(argv.iterations)) {
         baselineSeries.push(result.length);
     }
-    outputConfig(argv, workerSpecs);
 
     let controller = compositeControllerFactory([
         proportionalControllerFactory(argv.setPoint, argv.gain)
@@ -126,11 +128,19 @@ export const handler = async (argv: ControllerRunConfig) => {
     const controlledPlant = new WorkerPlant(makeWorkers(workerSpecs), logger);
     const controlledSeries = [];
     for (const result of controlledPlant.iterate(argv.iterations)) {
-        controlledSeries.push(result.length);
-
-        controlledPlant.addWorkers(
-            makeCountWorkers(controller(result.length), argv.durationStrategy)
-        );
+        controlledSeries.push(controlledPlant.workerCount);
+        const error = controller(result.length);
+        logger.info(`error ${error}`);
+        if (error > 0) {
+            controlledPlant.addWorkers(
+                makeCountWorkers(
+                    controller(result.length),
+                    argv.durationStrategy
+                )
+            );
+        } else {
+            controlledPlant.removeWorkers(error);
+        }
     }
 
     console.log("[ baseline plant (uncontrolled) ]");
@@ -138,17 +148,23 @@ export const handler = async (argv: ControllerRunConfig) => {
     console.log("\n\n");
     console.log("[ subject plant ]");
     console.log(outputPlantSeries(controlledSeries));
+    return {
+        config: argv,
+        baseline: baselineSeries,
+        subject: controlledSeries
+    };
 };
 
 const outputConfig = (
     argv: ControllerRunConfig,
     workerSpecs: WorkDuration[]
 ) => {
+    if (!console.table) return;
     console.table([
-        { param: "initial-workers", value: workerSpecs.length },
-        { param: "iterations", value: argv.iterations },
         { param: "set-point", value: argv.setPoint },
+        { param: "initial-workers", value: workerSpecs.length },
         { param: "gain", value: argv.gain },
+        { param: "iterations", value: argv.iterations },
         { param: "dead-zone", value: argv.deadZone }
     ]);
 };
