@@ -10,6 +10,18 @@
 
 source material from [Feedback Control for Computer Systems](https://www.amazon.com/Feedback-Control-Computer-Systems-Introducing/dp/1449361692)
 
+the solution product is a CLI that allows users to experiment with various configurations and controller composition.
+
+at present the CLI supports a single command `run`
+
+## solution terms
+
+- **Plant** represents a collection of workers that will perform a single unit of work per iteration. A plant may be configured with a variable number of workers. when a worker completes all it's units of work - it is removed from the internal pool of workers within the Plant.
+
+- **Worker** represents a entity able to perform units of work - via `cycle` method. each `cycle` decrements the workers units of work it has been allocated. when the worker has no more units of work to perform it is considered in a **completed** state
+
+in controller theory terms, the Plant output signal is the number of workers - the controllers are responsible for maintaining an ideal number of workers (set point)
+
 ## install
 
 - `git clone git@github.com:csaxton171/controller-theory-playground.git`
