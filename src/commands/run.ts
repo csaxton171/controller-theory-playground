@@ -31,6 +31,8 @@ export type ControllerRunConfig = {
     graph: boolean;
 };
 
+export const command = "run";
+
 export const describe = "runs controller against plant";
 
 export const builder = () =>
