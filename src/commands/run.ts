@@ -1,5 +1,7 @@
 import yargs from "yargs";
 import { plot } from "asciichart";
+import { converge, sum, length, divide } from "ramda";
+
 import {
     makeCountWorkers,
     makeWorkers,
@@ -111,6 +113,7 @@ export const builder = () =>
         );
 
 export const handler = async (argv: ControllerRunConfig) => {
+    const avg = converge(divide, [sum, length]);
     const workerSpecs: WorkDuration[] = argv.initialWorkers;
     /* istanbul ignore next */
     const logger = argv.debug ? new ConsoleLogger() : { info: () => null };
@@ -131,16 +134,24 @@ export const handler = async (argv: ControllerRunConfig) => {
         buildController(argv)
     );
 
-    console.log("[ baseline plant (uncontrolled) ]");
+    const result = {
+        config: argv,
+        baseline: {
+            series: baselineSeries,
+            avg: avg(baselineSeries)
+        },
+        subject: {
+            series: controlledSeries,
+            avg: avg(controlledSeries)
+        }
+    };
+
+    console.log(`  baseline plant (avg: ${result.baseline.avg.toFixed(3)})`);
     console.log(outputPlantSeries(baselineSeries));
     console.log("\n\n");
-    console.log("[ subject plant ]");
+    console.log(`  subject plant (avg: ${result.subject.avg.toFixed(3)})`);
     console.log(outputPlantSeries(controlledSeries));
-    return {
-        config: argv,
-        baseline: baselineSeries,
-        subject: controlledSeries
-    };
+    return result;
 };
 
 const outputConfig = (
