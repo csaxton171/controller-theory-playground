@@ -32,7 +32,6 @@ ctlr run --set-point 5
 # run with P & I controllers
 ctlr run --set-point 10 --controllers PI
 
-
 ```
 
 [conventional-commits-image]: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
