@@ -7,7 +7,13 @@
   "engines": {
     "node": "^12"
   },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
   "scripts": {
+    "commit": "git-cz",
     "test": "jest",
     "prettier": "echo $(prettier --version) && prettier \"{__tests__,src}/**/*.{json,ts}\"",
     "fmt:diff": "yarn prettier --list-different",
@@ -24,6 +30,7 @@
     "@types/node": "^13.1.0",
     "@types/ramda": "^0.26.38",
     "@types/yargs": "^13.0.4",
+    "commitizen": "^4.0.3",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
     "standard-version": "^7.0.1",
