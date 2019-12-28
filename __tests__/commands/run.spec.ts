@@ -137,8 +137,8 @@ describe("run", () => {
 
       expect(result).toMatchObject({
         config: expect.any(Object),
-        baseline: expect.any(Array),
-        subject: expect.any(Array)
+        baseline: expect.any(Object),
+        subject: expect.any(Object)
       });
     });
   });
