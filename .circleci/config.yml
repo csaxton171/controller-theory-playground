@@ -5,6 +5,9 @@ parameters:
     type: string
     default: "v1"
 
+orbs:
+  coveralls: coveralls/coveralls@1.0.4
+
 executors:
   node:
     docker:
@@ -52,7 +55,8 @@ jobs:
           at: ./
       - run:
           name: run tests
-          command: yarn test
+          command: yarn test --coverage
+      - coveralls/upload
 
   node-validate:
     executor: node
