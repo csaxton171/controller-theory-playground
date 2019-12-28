@@ -11,7 +11,8 @@
     "test": "jest",
     "prettier": "echo $(prettier --version) && prettier \"{__tests__,src}/**/*.{json,ts}\"",
     "fmt:diff": "yarn prettier --list-different",
-    "fmt": "yarn prettier --write"
+    "fmt": "yarn prettier --write",
+    "release": "standard-version"
   },
   "bin": {
     "ctlr": "bin/controller-theory-playground"
@@ -25,6 +26,7 @@
     "@types/yargs": "^13.0.4",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
+    "standard-version": "^7.0.1",
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"
   },
