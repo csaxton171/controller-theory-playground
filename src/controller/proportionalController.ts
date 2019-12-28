@@ -1,6 +1,6 @@
-import { Controller } from "./index";
+import { Controller, calculateError } from "./index";
 
 export const proportionalControllerFactory = (
     setPoint: number,
     gain: number
-): Controller => (input: number) => (setPoint - input) * gain;
+): Controller => (input: number) => calculateError(setPoint, input) * gain;
