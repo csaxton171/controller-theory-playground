@@ -2,7 +2,8 @@ export {
     WorkDuration,
     randomDuration,
     randomDurations,
-    fixedDuration
+    fixedDuration,
+    parseWorkDuration
 } from "./WorkDuration";
 export { WorkerPlant } from "./WorkerPlant";
 

@@ -6,22 +6,27 @@ import {
     WorkerPlant,
     WorkDuration,
     randomDuration,
-    fixedDuration
+    fixedDuration,
+    parseWorkDuration
 } from "../worker";
 import {
     proportionalControllerFactory,
     compositeControllerFactory,
-    deadZoneDecorator
+    deadZoneDecorator,
+    noopControllerFactory,
+    integralControllerFactory,
+    Controller
 } from "../controller";
-import { ConsoleLogger } from "../logging";
+import { ConsoleLogger, Logger } from "../logging";
 
-type ControllerRunConfig = {
+export type ControllerRunConfig = {
     setPoint: number;
     gain: number;
     iterations: number;
     deadZone: [number, number] | [];
     initialWorkers: WorkDuration[];
     durationStrategy: () => WorkDuration;
+    controllers: "P" | "I" | "PI";
     debug: boolean;
     graph: boolean;
 };
@@ -65,21 +70,22 @@ export const builder = () =>
                 default: ""
             },
             initialWorkers: {
-                alias: "workers",
+                alias: "w",
                 describe: "an list of work durations ( e.g. 1 5 3 10 8 )",
                 array: true,
                 default: [10, 5, 3, 5, 15, 30, 15]
             },
             durationStrategy: {
                 alias: "ds",
-                describe: "method of producing durations for new workers",
-                choices: [
-                    "randomUnits",
-                    "singleUnit",
-                    "doubleUnit",
-                    "tripleUnit"
-                ],
+                describe:
+                    "method of producing durations for new workers either 'randomUnits' or 'nUnits' (where n is a valid Work Duration)",
                 default: "randomUnits"
+            },
+            controllers: {
+                alias: "c",
+                describe: "dictates the composition of controllers employed",
+                choices: ["P", "I", "PI"],
+                default: "P"
             }
         })
         .coerce({
@@ -88,18 +94,14 @@ export const builder = () =>
 
             initialWorkers: (opt: WorkDuration[]) => opt,
             durationStrategy: (opt: string) => {
-                switch (opt) {
-                    case "randomUnits":
-                        return randomDuration;
-                    case "singleUnit":
-                        return fixedDuration(1);
-                    case "doubleUnit":
-                        return fixedDuration(1);
-                    case "tripleUnit":
-                        return fixedDuration(3);
-                    default:
-                        return randomDuration;
-                }
+                const parsedDuration = parseWorkDuration(opt);
+                const result = parsedDuration
+                    ? fixedDuration(parsedDuration as WorkDuration)
+                    : randomDuration;
+
+                result.toString = parsedDuration ? () => opt : () => "random";
+
+                return result;
             }
         })
         .usage(
@@ -108,40 +110,24 @@ export const builder = () =>
 
 export const handler = async (argv: ControllerRunConfig) => {
     const workerSpecs: WorkDuration[] = argv.initialWorkers;
+    /* istanbul ignore next */
     const logger = argv.debug ? new ConsoleLogger() : { info: () => null };
-
     outputConfig(argv, workerSpecs);
 
-    const baselinePlant = new WorkerPlant(makeWorkers(workerSpecs), logger);
-    const baselineSeries = [];
-    for (const result of baselinePlant.iterate(argv.iterations)) {
-        baselineSeries.push(result.length);
-    }
+    // no controller
+    const baselineSeries = runWorkPlant(
+        argv,
+        new WorkerPlant(makeWorkers(workerSpecs), logger),
+        logger
+    );
 
-    let controller = compositeControllerFactory([
-        proportionalControllerFactory(argv.setPoint, argv.gain)
-    ]);
-
-    if (argv.deadZone.length == 2) {
-        controller = deadZoneDecorator(controller, argv.deadZone);
-    }
-    const controlledPlant = new WorkerPlant(makeWorkers(workerSpecs), logger);
-    const controlledSeries = [];
-    for (const result of controlledPlant.iterate(argv.iterations)) {
-        controlledSeries.push(controlledPlant.workerCount);
-        const error = controller(result.length);
-        logger.info(`error ${error}`);
-        if (error > 0) {
-            controlledPlant.addWorkers(
-                makeCountWorkers(
-                    controller(result.length),
-                    argv.durationStrategy
-                )
-            );
-        } else {
-            controlledPlant.removeWorkers(error);
-        }
-    }
+    // tada!
+    const controlledSeries = runWorkPlant(
+        argv,
+        new WorkerPlant(makeWorkers(workerSpecs), logger),
+        logger,
+        buildController(argv)
+    );
 
     console.log("[ baseline plant (uncontrolled) ]");
     console.log(outputPlantSeries(baselineSeries));
@@ -159,14 +145,67 @@ const outputConfig = (
     argv: ControllerRunConfig,
     workerSpecs: WorkDuration[]
 ) => {
-    if (!console.table) return;
-    console.table([
+    /* istanbul ignore next */
+    const table = console.table
+        ? console.table
+        : (items: { para: string; value: string }[]) =>
+              items.forEach(console.log);
+
+    table([
         { param: "set-point", value: argv.setPoint },
+        { param: "controllers", value: argv.controllers },
         { param: "initial-workers", value: workerSpecs.length },
         { param: "gain", value: argv.gain },
         { param: "iterations", value: argv.iterations },
+        {
+            param: "duration-strategy",
+            value: argv.durationStrategy.toString()
+        },
         { param: "dead-zone", value: argv.deadZone }
     ]);
 };
 
 const outputPlantSeries = (series: number[]) => plot(series, { height: 10 });
+
+export const buildController = (
+    config: ControllerRunConfig,
+    pControllerFactory: Function = proportionalControllerFactory,
+    iControllerFactory: Function = integralControllerFactory,
+    dzDecoratorFactory: Function = deadZoneDecorator
+) => {
+    let result = compositeControllerFactory([
+        `${config.controllers}`.includes("P")
+            ? pControllerFactory(config.setPoint, config.gain)
+            : noopControllerFactory(0),
+        `${config.controllers}`.includes("I")
+            ? iControllerFactory(config.setPoint)
+            : noopControllerFactory(0)
+    ]);
+    if (config.deadZone.length == 2) {
+        result = dzDecoratorFactory(result, config.deadZone);
+    }
+    return result;
+};
+
+export const runWorkPlant = (
+    config: ControllerRunConfig,
+    workerPlant: WorkerPlant,
+    logger: Logger,
+    controller: Controller = noopControllerFactory(0)
+): number[] => {
+    const resultSeries: number[] = [];
+    for (const result of workerPlant.iterate(config.iterations)) {
+        resultSeries.push(workerPlant.workerCount);
+        const error = controller(result.length);
+        logger.info(`error ${error}`);
+
+        if (error > 0) {
+            workerPlant.addWorkers(
+                makeCountWorkers(error, config.durationStrategy)
+            );
+        } else {
+            workerPlant.removeWorkers(error);
+        }
+    }
+    return resultSeries;
+};
