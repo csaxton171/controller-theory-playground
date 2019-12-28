@@ -47,9 +47,17 @@ ctlr run --set-point 10 --controllers PI
 
 ```
 
+run output is divided into:
+
+- 1st - the control/baseline output - charted is the output signal over the configured iterations **without** the benefit of controllers
+- 2nd - the managed/controlled output - charted is the output signal over the configured iterations using the configured controllers
+
+![example - run command output][image-run-example-output]
+
 [conventional-commits-image]: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
 [conventional-commits-url]: https://conventionalcommits.org/
 [circleci-image]: https://circleci.com/gh/csaxton171/controller-theory-playground.svg?style=svg&circle-token=55f8d89625eab38101706cc6d65203715e082333
 [circleci-url]: https://circleci.com/gh/csaxton171/controller-theory-playground
 [coverage-image]: https://coveralls.io/repos/github/csaxton171/controller-theory-playground/badge.svg?branch=master
 [coverage-url]: https://coveralls.io/github/csaxton171/controller-theory-playground?branch=master
+[image-run-example-output]: ./docs/cmd-run-example-output.png
